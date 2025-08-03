@@ -8,51 +8,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-        /* Custom styles for the range slider thumb for better UX */
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            background: #2563eb; /* Tailwind blue-600 */
-            cursor: pointer;
-            border-radius: 50%;
-            margin-top: -6px; /* Vertically center the thumb on the track */
-            transition: background-color 0.2s ease-in-out;
-        }
-        input[type=range]::-webkit-slider-thumb:hover {
-            background: #3b82f6; /* Tailwind blue-500 */
-        }
-        input[type=range]::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
-            background: #2563eb;
-            cursor: pointer;
-            border-radius: 50%;
-        }
-        /* Style for the active and inactive tabs */
-        .tab-active {
-            background-color: #2563eb; /* blue-600 */
-            color: white;
-        }
-        .tab-inactive {
-            background-color: #1f2937; /* gray-800 */
-            color: #9ca3af; /* gray-400 */
-        }
-        .tab-inactive:hover {
-            background-color: #374151; /* gray-700 */
-            color: #d1d5db; /* gray-300 */
-        }
-        /* Styles for the help modal */
-        .modal-overlay {
-            transition: opacity 0.3s ease;
-        }
-        .modal-content {
-            transition: transform 0.3s ease;
-        }
-    </style>
+    <!-- Link to the external stylesheet -->
+    <link rel="stylesheet" href="/static/css/styles.css">
 </head>
 <body class="bg-gray-900 text-gray-200 flex items-center justify-center min-h-screen p-4 antialiased">
 
@@ -184,31 +141,21 @@
         </div>
     </div>
 
+    <!-- All JavaScript remains the same -->
     <script>
-        // --- API Endpoint ---
         const API_URL = 'http://localhost:8080/generate';
-
-        // --- DOM Element References ---
         const resultsContainer = document.getElementById('results-container');
         const messageArea = document.getElementById('message-area');
         const generateButton = document.getElementById('generate-button');
-
-        // Tabs
         const tabRandom = document.getElementById('tab-random');
         const tabMemorable = document.getElementById('tab-memorable');
-        
-        // Forms
         const randomForm = document.getElementById('random-form');
         const memorableForm = document.getElementById('memorable-form');
-
-        // Modal elements
         const helpButton = document.getElementById('help-button');
         const helpModal = document.getElementById('help-modal');
         const modalOverlay = document.getElementById('modal-overlay');
         const modalContent = document.getElementById('modal-content');
         const modalCloseButton = document.getElementById('modal-close-button');
-
-        // Random Form Controls
         const lengthSlider = document.getElementById('length');
         const lengthValue = document.getElementById('length-value');
         const countSlider = document.getElementById('count');
@@ -220,41 +167,25 @@
             special: document.getElementById('special'),
             excludeSimilar: document.getElementById('exclude-similar')
         };
-        
-        // Memorable Form Controls
         const wordCountSlider = document.getElementById('word-count');
         const wordCountValue = document.getElementById('word-count-value');
         const memorableCountSlider = document.getElementById('memorable-count');
         const memorableCountValue = document.getElementById('memorable-count-value');
         const separatorSelect = document.getElementById('separator');
-
         let currentTab = 'random';
-
-        // --- Event Listeners ---
-        
-        // Tab switching
         tabRandom.addEventListener('click', () => switchTab('random'));
         tabMemorable.addEventListener('click', () => switchTab('memorable'));
-
-        // Slider value updates
         lengthSlider.addEventListener('input', (e) => lengthValue.textContent = e.target.value);
         countSlider.addEventListener('input', (e) => countValue.textContent = e.target.value);
         wordCountSlider.addEventListener('input', (e) => wordCountValue.textContent = e.target.value);
         memorableCountSlider.addEventListener('input', (e) => memorableCountValue.textContent = e.target.value);
-        
-        // Generate button click
         generateButton.addEventListener('click', handleGeneration);
-
-        // Modal listeners
         helpButton.addEventListener('click', openModal);
         modalCloseButton.addEventListener('click', closeModal);
         modalOverlay.addEventListener('click', closeModal);
-
-        // --- Functions ---
-
         function openModal() {
             helpModal.classList.remove('hidden');
-            document.body.classList.add('overflow-hidden'); // Prevent background scrolling
+            document.body.classList.add('overflow-hidden');
             requestAnimationFrame(() => {
                 modalOverlay.classList.remove('opacity-0');
                 modalOverlay.classList.add('opacity-100');
@@ -262,7 +193,6 @@
                 modalContent.classList.add('scale-100');
             });
         }
-
         function closeModal() {
             modalOverlay.classList.remove('opacity-100');
             modalOverlay.classList.add('opacity-0');
@@ -271,26 +201,20 @@
             setTimeout(() => {
                 helpModal.classList.add('hidden');
                 document.body.classList.remove('overflow-hidden');
-            }, 300); // Match transition duration
+            }, 300);
         }
-        
         function switchTab(tabName) {
             currentTab = tabName;
             const isRandom = tabName === 'random';
-            
             tabRandom.className = isRandom ? 'tab-active ...' : 'tab-inactive ...';
             tabMemorable.className = !isRandom ? 'tab-active ...' : 'tab-inactive ...';
-            // Add common classes back
             document.querySelectorAll('.tab-active, .tab-inactive').forEach(el => {
                 el.classList.add('flex-1', 'py-2.5', 'px-4', 'rounded-t-lg', 'font-semibold', 'transition-colors', 'focus:outline-none', 'focus:ring-2', 'focus:ring-blue-500', 'focus:ring-opacity-50');
             });
-
             randomForm.classList.toggle('hidden', !isRandom);
             memorableForm.classList.toggle('hidden', isRandom);
-            
             handleGeneration();
         }
-
         async function handleGeneration() {
             let payload;
             if (currentTab === 'random') {
@@ -298,12 +222,10 @@
                 const useLowercase = randomOptions.lowercase.checked;
                 const useNumbers = randomOptions.numbers.checked;
                 const useSpecial = randomOptions.special.checked;
-
                 if (!useUppercase && !useLowercase && !useNumbers && !useSpecial) {
                     showMessage('Error: Select at least one character type.', 'error');
                     return;
                 }
-                
                 payload = {
                     type: 'random',
                     length: parseInt(lengthSlider.value, 10),
@@ -322,33 +244,26 @@
                     separator: separatorSelect.value
                 };
             }
-
             resultsContainer.innerHTML = '<div class="text-center text-gray-400 p-5">Generating...</div>';
             messageArea.textContent = '';
-
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({error: `Server responded with status: ${response.status}`}));
                     throw new Error(errorData.error || `Server error`);
                 }
-
                 const data = await response.json();
                 if (data.error) throw new Error(data.error);
-                
                 displayResults(data.passwords, data.strength);
-
             } catch (error) {
                 console.error('Error generating password:', error);
                 resultsContainer.innerHTML = `<div class="text-center text-red-400 p-5">Error: Could not connect to the API server. Is it running?</div>`;
             }
         }
-
         function displayResults(passwords, strengthInfo) {
             resultsContainer.innerHTML = '';
             if (!passwords || passwords.length === 0) {
@@ -358,7 +273,6 @@
             passwords.forEach(password => {
                 const passwordDiv = document.createElement('div');
                 passwordDiv.className = 'bg-gray-700/50 p-3 rounded-md flex items-center justify-between';
-
                 let strengthHtml = '';
                 if (strengthInfo && strengthInfo[password]) {
                     const { text, color, width } = strengthInfo[password];
@@ -372,7 +286,6 @@
                         </div>
                     `;
                 }
-
                 passwordDiv.innerHTML = `
                     <span class="text-md font-mono break-all text-gray-300 flex-1">${password}</span>
                     <div class="flex items-center">
@@ -384,7 +297,6 @@
                 `;
                 resultsContainer.appendChild(passwordDiv);
             });
-            
             document.querySelectorAll('.copy-btn').forEach(button => {
                 button.addEventListener('click', (e) => {
                     const passwordToCopy = e.currentTarget.dataset.password;
@@ -397,13 +309,11 @@
                 });
             });
         }
-        
         function showMessage(message, type = 'success') {
             messageArea.textContent = message;
             messageArea.className = `text-center mt-4 h-5 text-sm ${type === 'success' ? 'text-green-400' : 'text-red-400'}`;
             setTimeout(() => { messageArea.textContent = ''; }, 3000);
         }
-        
         document.addEventListener('DOMContentLoaded', handleGeneration);
     </script>
 </body>

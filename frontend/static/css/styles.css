@@ -1,0 +1,53 @@
+body {
+    font-family: 'Inter', sans-serif;
+}
+
+/* Custom styles for the range slider thumb for better UX */
+input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: #2563eb; /* Tailwind blue-600 */
+    cursor: pointer;
+    border-radius: 50%;
+    margin-top: -6px; /* Vertically center the thumb on the track */
+    transition: background-color 0.2s ease-in-out;
+}
+
+input[type=range]::-webkit-slider-thumb:hover {
+    background: #3b82f6; /* Tailwind blue-500 */
+}
+
+input[type=range]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: #2563eb;
+    cursor: pointer;
+    border-radius: 50%;
+}
+
+/* Style for the active and inactive tabs */
+.tab-active {
+    background-color: #2563eb; /* blue-600 */
+    color: white;
+}
+
+.tab-inactive {
+    background-color: #1f2937; /* gray-800 */
+    color: #9ca3af; /* gray-400 */
+}
+
+.tab-inactive:hover {
+    background-color: #374151; /* gray-700 */
+    color: #d1d5db; /* gray-300 */
+}
+
+/* Styles for the help modal */
+.modal-overlay {
+    transition: opacity 0.3s ease;
+}
+
+.modal-content {
+    transition: transform 0.3s ease;
+}
