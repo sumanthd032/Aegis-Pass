@@ -78,6 +78,7 @@ function switchTab(tabName) {
     tabRandom.className = isRandom ? 'tab-active' : 'tab-inactive';
     tabMemorable.className = !isRandom ? 'tab-active' : 'tab-inactive';
     
+    // Re-apply all the shared utility classes to both tabs
     document.querySelectorAll('.tab-active, .tab-inactive').forEach(el => {
         el.classList.add('flex-1', 'py-2.5', 'px-4', 'rounded-t-lg', 'font-semibold', 'transition-colors', 'focus:outline-none', 'focus:ring-2', 'focus:ring-blue-500', 'focus:ring-opacity-50');
     });
