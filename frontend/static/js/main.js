@@ -1,5 +1,6 @@
 // --- CONSTANTS ---
-const API_URL = 'http://localhost:8080/generate';
+const API_URL = '/generate';  // Comment this if you're running locally
+// const API_URL = 'http://localhost:8080/generate'; 
 
 // SVG icons for copy button feedback
 const COPY_ICON_SVG = `<rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>`;
