@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aegis Pass - Advanced Password Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        /* Custom styles for the range slider thumb for better UX */
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #3b82f6; /* Tailwind blue-500 */
+            cursor: pointer;
+            border-radius: 50%;
+            margin-top: -6px; /* Vertically center the thumb on the track */
+        }
+        input[type=range]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #3b82f6;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+        /* Style for the active and inactive tabs */
+        .tab-active {
+            background-color: #3b82f6; /* blue-500 */
+            color: white;
+        }
+        .tab-inactive {
+            background-color: #374151; /* gray-700 */
+            color: #d1d5db; /* gray-300 */
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-200 flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-2xl mx-auto">
+        <header class="text-center mb-6">
+            <h1 class="text-4xl sm:text-5xl font-bold text-white">Aegis Pass</h1>
+            <p class="text-gray-400 mt-2">Your personal shield for secure passwords.</p>
+        </header>
+
+        <main>
+            <!-- Results Display Area -->
+            <div id="results-container" class="bg-gray-800 p-4 rounded-lg mb-6 shadow-lg space-y-3">
+                <!-- Generated passwords will be dynamically inserted here -->
+            </div>
+
+            <!-- Generator Controls -->
+            <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+                <!-- Tabs for switching between generator types -->
+                <div class="flex border-b border-gray-700 mb-6">
+                    <button id="tab-random" class="tab-active flex-1 py-2 px-4 rounded-t-lg font-semibold transition-colors focus:outline-none">Random</button>
+                    <button id="tab-memorable" class="tab-inactive flex-1 py-2 px-4 rounded-t-lg font-semibold transition-colors focus:outline-none">Memorable</button>
+                </div>
+
+                <!-- Random Password Form -->
+                <form id="random-form">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
+                        <!-- Left Column: Length and Count controls -->
+                        <div>
+                            <div class="mb-5">
+                                <div class="flex justify-between items-center mb-2">
+                                    <label for="length" class="font-medium text-white">Password Length</label>
+                                    <span id="length-value" class="text-blue-400 font-semibold text-lg">16</span>
+                                </div>
+                                <input type="range" id="length" min="8" max="128" value="16" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                            </div>
+                            <div class="mb-5">
+                                <div class="flex justify-between items-center mb-2">
+                                    <label for="count" class="font-medium text-white">Password Count</label>
+                                    <span id="count-value" class="text-blue-400 font-semibold text-lg">1</span>
+                                </div>
+                                <input type="range" id="count" min="1" max="10" value="1" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                            </div>
+                        </div>
+                        <!-- Right Column: Character type checkboxes -->
+                        <div>
+                            <div class="space-y-3">
+                                <div class="flex items-center"><input id="uppercase" type="checkbox" checked class="w-5 h-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"><label for="uppercase" class="ml-3 text-sm font-medium text-gray-300">Uppercase (A-Z)</label></div>
+                                <div class="flex items-center"><input id="lowercase" type="checkbox" checked class="w-5 h-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"><label for="lowercase" class="ml-3 text-sm font-medium text-gray-300">Lowercase (a-z)</label></div>
+                                <div class="flex items-center"><input id="numbers" type="checkbox" checked class="w-5 h-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"><label for="numbers" class="ml-3 text-sm font-medium text-gray-300">Numbers (0-9)</label></div>
+                                <div class="flex items-center"><input id="special" type="checkbox" checked class="w-5 h-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"><label for="special" class="ml-3 text-sm font-medium text-gray-300">Special Chars (!@#)</label></div>
+                                <div class="flex items-center"><input id="exclude-similar" type="checkbox" class="w-5 h-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"><label for="exclude-similar" class="ml-3 text-sm font-medium text-gray-300">Exclude Similar (i,l,1,O,0)</label></div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Memorable Password Form -->
+                <form id="memorable-form" class="hidden">
+                     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
+                        <!-- Left Column: Word count and password count -->
+                        <div>
+                            <div class="mb-5">
+                                <div class="flex justify-between items-center mb-2">
+                                    <label for="word-count" class="font-medium text-white">Number of Words</label>
+                                    <span id="word-count-value" class="text-blue-400 font-semibold text-lg">4</span>
+                                </div>
+                                <input type="range" id="word-count" min="3" max="10" value="4" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                            </div>
+                             <div class="mb-5">
+                                <div class="flex justify-between items-center mb-2">
+                                    <label for="memorable-count" class="font-medium text-white">Password Count</label>
+                                    <span id="memorable-count-value" class="text-blue-400 font-semibold text-lg">1</span>
+                                </div>
+                                <input type="range" id="memorable-count" min="1" max="10" value="1" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                            </div>
+                        </div>
+                        <!-- Right Column: Separator selection -->
+                        <div>
+                            <label for="separator" class="block mb-2 text-sm font-medium text-white">Separator</label>
+                            <select id="separator" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                                <option value="-">Hyphen (-)</option>
+                                <option value=" ">Space ( )</option>
+                                <option value=".">Period (.)</option>
+                                <option value="_">Underscore (_)</option>
+                                <option value=",">Comma (,)</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Generate Button & Message Area -->
+                <div class="mt-8">
+                    <button id="generate-button" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-md focus:outline-none focus:ring-4 focus:ring-blue-800">
+                        Generate Password
+                    </button>
+                    <div id="message-area" class="text-center mt-4 h-5 text-sm text-green-400"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // --- API Endpoint ---
+        // This is the address of the Python backend server.
+        const API_URL = 'http://localhost:8080/generate';
+
+        // --- DOM Element References ---
+        const resultsContainer = document.getElementById('results-container');
+        const messageArea = document.getElementById('message-area');
+        const generateButton = document.getElementById('generate-button');
+
+        // Tabs
+        const tabRandom = document.getElementById('tab-random');
+        const tabMemorable = document.getElementById('tab-memorable');
+        
+        // Forms
+        const randomForm = document.getElementById('random-form');
+        const memorableForm = document.getElementById('memorable-form');
+
+        // Random Form Controls
+        const lengthSlider = document.getElementById('length');
+        const lengthValue = document.getElementById('length-value');
+        const countSlider = document.getElementById('count');
+        const countValue = document.getElementById('count-value');
+        const randomOptions = {
+            uppercase: document.getElementById('uppercase'),
+            lowercase: document.getElementById('lowercase'),
+            numbers: document.getElementById('numbers'),
+            special: document.getElementById('special'),
+            excludeSimilar: document.getElementById('exclude-similar')
+        };
+        
+        // Memorable Form Controls
+        const wordCountSlider = document.getElementById('word-count');
+        const wordCountValue = document.getElementById('word-count-value');
+        const memorableCountSlider = document.getElementById('memorable-count');
+        const memorableCountValue = document.getElementById('memorable-count-value');
+        const separatorSelect = document.getElementById('separator');
+
+        let currentTab = 'random';
+
+        // --- Event Listeners ---
+        
+        // Switch tabs on click
+        tabRandom.addEventListener('click', () => switchTab('random'));
+        tabMemorable.addEventListener('click', () => switchTab('memorable'));
+
+        // Update slider value displays on input
+        lengthSlider.addEventListener('input', (e) => lengthValue.textContent = e.target.value);
+        countSlider.addEventListener('input', (e) => countValue.textContent = e.target.value);
+        wordCountSlider.addEventListener('input', (e) => wordCountValue.textContent = e.target.value);
+        memorableCountSlider.addEventListener('input', (e) => memorableCountValue.textContent = e.target.value);
+        
+        // Handle the main generate button click
+        generateButton.addEventListener('click', handleGeneration);
+
+        // --- Functions ---
+        
+        /**
+         * Switches the active tab and form visibility.
+         * @param {string} tabName - The name of the tab to switch to ('random' or 'memorable').
+         */
+        function switchTab(tabName) {
+            currentTab = tabName;
+            const isRandom = tabName === 'random';
+            
+            tabRandom.className = isRandom ? 'tab-active ...' : 'tab-inactive ...';
+            tabMemorable.className = !isRandom ? 'tab-active ...' : 'tab-inactive ...';
+            // Add common classes back
+            document.querySelectorAll('.tab-active, .tab-inactive').forEach(el => {
+                el.classList.add('flex-1', 'py-2', 'px-4', 'rounded-t-lg', 'font-semibold', 'transition-colors', 'focus:outline-none');
+            });
+
+            randomForm.classList.toggle('hidden', !isRandom);
+            memorableForm.classList.toggle('hidden', isRandom);
+            
+            // Generate a new password immediately upon switching tabs
+            handleGeneration();
+        }
+
+        /**
+         * Gathers form data, sends it to the API, and initiates displaying the results.
+         */
+        async function handleGeneration() {
+            let payload;
+            if (currentTab === 'random') {
+                const useUppercase = randomOptions.uppercase.checked;
+                const useLowercase = randomOptions.lowercase.checked;
+                const useNumbers = randomOptions.numbers.checked;
+                const useSpecial = randomOptions.special.checked;
+
+                if (!useUppercase && !useLowercase && !useNumbers && !useSpecial) {
+                    showMessage('Error: Select at least one character type.', 'error');
+                    return;
+                }
+                
+                payload = {
+                    type: 'random',
+                    length: parseInt(lengthSlider.value, 10),
+                    count: parseInt(countSlider.value, 10),
+                    use_uppercase: useUppercase,
+                    use_lowercase: useLowercase,
+                    use_numbers: useNumbers,
+                    use_special: useSpecial,
+                    exclude_similar: randomOptions.excludeSimilar.checked
+                };
+            } else {
+                payload = {
+                    type: 'memorable',
+                    word_count: parseInt(wordCountSlider.value, 10),
+                    count: parseInt(memorableCountSlider.value, 10),
+                    separator: separatorSelect.value
+                };
+            }
+
+            resultsContainer.innerHTML = '<div class="text-center text-gray-400">Generating...</div>';
+            messageArea.textContent = '';
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({error: `Server responded with status: ${response.status}`}));
+                    throw new Error(errorData.error || `Server error`);
+                }
+
+                const data = await response.json();
+                if (data.error) throw new Error(data.error);
+                
+                displayResults(data.passwords, data.strength);
+
+            } catch (error) {
+                console.error('Error generating password:', error);
+                resultsContainer.innerHTML = `<div class="text-center text-red-400">Error: Could not connect to the API server. Is it running?</div>`;
+            }
+        }
+
+        /**
+         * Renders the generated passwords and their strength meters in the results container.
+         * @param {string[]} passwords - An array of generated password strings.
+         * @param {object} strengthInfo - An object mapping passwords to their strength details.
+         */
+        function displayResults(passwords, strengthInfo) {
+            resultsContainer.innerHTML = '';
+            passwords.forEach(password => {
+                const passwordDiv = document.createElement('div');
+                passwordDiv.className = 'bg-gray-700 p-3 rounded-md flex items-center justify-between';
+
+                let strengthHtml = '';
+                if (strengthInfo && strengthInfo[password]) {
+                    const { text, color, width } = strengthInfo[password];
+                    const textColorClass = color.replace('bg-', 'text-');
+                    strengthHtml = `
+                        <div class="w-1/4 ml-4">
+                            <div class="w-full bg-gray-600 rounded-full h-2.5">
+                                <div class="${color} h-2.5 rounded-full" style="width: ${width}"></div>
+                            </div>
+                            <p class="text-xs ${textColorClass} text-center mt-1">${text}</p>
+                        </div>
+                    `;
+                }
+
+                passwordDiv.innerHTML = `
+                    <span class="text-md font-mono break-all text-gray-300">${password}</span>
+                    <div class="flex items-center">
+                        ${strengthHtml}
+                        <button title="Copy to clipboard" class="copy-btn p-2 ml-4 rounded-md hover:bg-gray-600 active:bg-gray-500 transition-colors" data-password="${password}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        </button>
+                    </div>
+                `;
+                resultsContainer.appendChild(passwordDiv);
+            });
+            
+            // Add event listeners to the newly created copy buttons
+            document.querySelectorAll('.copy-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const passwordToCopy = e.currentTarget.dataset.password;
+                    navigator.clipboard.writeText(passwordToCopy).then(() => {
+                        showMessage('Password copied to clipboard!', 'success');
+                    }).catch(err => {
+                        console.error('Failed to copy:', err);
+                        showMessage('Failed to copy password.', 'error');
+                    });
+                });
+            });
+        }
+        
+        /**
+         * Displays a temporary message to the user (e.g., for copy success or errors).
+         * @param {string} message - The text to display.
+         * @param {string} type - The type of message ('success' or 'error').
+         */
+        function showMessage(message, type = 'success') {
+            messageArea.textContent = message;
+            messageArea.className = `text-center mt-4 h-5 text-sm ${type === 'success' ? 'text-green-400' : 'text-red-400'}`;
+            setTimeout(() => { messageArea.textContent = ''; }, 3000);
+        }
+        
+        // Generate a password when the page first loads
+        document.addEventListener('DOMContentLoaded', handleGeneration);
+    </script>
+</body>
+</html>
