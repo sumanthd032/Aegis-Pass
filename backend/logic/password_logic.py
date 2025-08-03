@@ -3,7 +3,6 @@ import secrets
 import math
 
 # --- Built-in Wordlist for Memorable Passwords ---
-# Sourced from a common, effective wordlist for generating passphrases.
 EASY_WORDS = [
     "acid", "acorn", "acre", "acts", "afar", "affix", "aged", "agent",
     "agile", "aging", "agony", "ahead", "aide", "aids", "aim", "air",
@@ -58,15 +57,22 @@ EASY_WORDS = [
     "buy", "buyer", "buzz", "bye", "bygone", "bylaw", "bypass", "byte"
 ]
 
-def calculate_strength(password, char_pool_size):
+def calculate_strength(password, char_pool_size, is_memorable=False):
     """Calculates password strength based on entropy."""
     if not password or not char_pool_size:
         return {"text": "N/A", "color": "bg-gray-500", "width": "0%"}
     
-    # Calculate the number of possible combinations (entropy)
-    entropy = len(password) * math.log2(char_pool_size)
+    # The formula for entropy is log2(pool_size ^ length)
+    # which simplifies to length * log2(pool_size)
+    if is_memorable:
+        # For memorable passwords, length is the number of words.
+        length = len(password.split('-')) if '-' in password else len(password.split(' '))
+    else:
+        # For random passwords, length is the number of characters.
+        length = len(password)
+
+    entropy = length * math.log2(char_pool_size)
     
-    # Determine strength level based on entropy score
     if entropy < 40:
         text, color, width = "Very Weak", "bg-red-500", "20%"
     elif entropy < 60:
@@ -81,40 +87,48 @@ def calculate_strength(password, char_pool_size):
     return {"text": text, "color": color, "width": width}
 
 def generate_random_password(length, use_uppercase, use_lowercase, use_numbers, use_special, exclude_similar):
-    """
-    Generates a cryptographically strong random password.
+    """Generates a cryptographically strong random password with accurate length."""
     
-    Uses the 'secrets' module for generating random characters, which is
-    suitable for cryptographic applications.
-    """
+    # **BUG FIX**: This function is rewritten to guarantee length and character inclusion.
+    
+    # 1. Build the total pool of allowed characters.
     char_pool_str = ""
     if use_uppercase: char_pool_str += string.ascii_uppercase
     if use_lowercase: char_pool_str += string.ascii_lowercase
     if use_numbers: char_pool_str += string.digits
     if use_special: char_pool_str += "!@#$%^&*()-_=+[]{}|;:,.<>?"
 
-    # Exclude visually similar characters if requested
     if exclude_similar:
         char_pool_str = "".join(c for c in char_pool_str if c not in "il1LoO")
 
     if not char_pool_str:
-        return "", 0 # Return empty if no character sets are selected
+        return "", 0
 
-    # Generate the password by choosing characters from the pool
-    password = "".join(secrets.choice(char_pool_str) for _ in range(length))
+    # 2. Generate a password of the correct length from the entire pool.
+    password_list = [secrets.choice(char_pool_str) for _ in range(length)]
     
-    # Return the password and the size of the character pool for strength calculation
-    return password, len(char_pool_str)
+    # 3. Ensure at least one of each required character type is present.
+    # This is done by replacing random characters in the generated list.
+    guaranteed_chars = []
+    if use_uppercase: guaranteed_chars.append(secrets.choice(string.ascii_uppercase))
+    if use_lowercase: guaranteed_chars.append(secrets.choice(string.ascii_lowercase))
+    if use_numbers: guaranteed_chars.append(secrets.choice(string.digits))
+    if use_special: guaranteed_chars.append(secrets.choice("!@#$%^&*()-_=+[]{}|;:,.<>?"))
+
+    # Replace the first few characters of the password with the guaranteed ones.
+    # This is safe because we will shuffle the entire list next.
+    for i in range(len(guaranteed_chars)):
+        # Ensure we don't go out of bounds if length < number of categories
+        if i < len(password_list):
+            password_list[i] = guaranteed_chars[i]
+
+    # 4. Shuffle the list thoroughly to ensure random placement.
+    secrets.SystemRandom().shuffle(password_list)
+
+    return "".join(password_list), len(char_pool_str)
 
 def generate_memorable_password(word_count, separator):
-    """
-    Generates a memorable passphrase using a wordlist (Diceware style).
-    """
-    # Select a number of random words from the list
+    """Generates a memorable passphrase from a wordlist."""
     words = [secrets.choice(EASY_WORDS) for _ in range(word_count)]
-    
-    # Join the words with the chosen separator
     password = separator.join(words)
-    
-    # The "pool size" for a memorable password is the total number of words available
     return password, len(EASY_WORDS)

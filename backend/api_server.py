@@ -4,10 +4,12 @@ import sys
 import os
 import mimetypes
 
-# --- Add the 'logic' directory to the Python path ---
+
+# This allows us to import from the 'logic' module.
 sys.path.append(os.path.join(os.path.dirname(__file__), 'logic'))
 
 # --- Import the core logic functions ---
+# Now that the path is set, we can import our logic functions.
 from password_logic import (
     generate_random_password,
     generate_memorable_password,
@@ -36,6 +38,7 @@ def serve_static_file(path):
     try:
         with open(file_path, 'rb') as f:
             content = f.read()
+        # Guess the MIME type (e.g., 'text/css', 'application/javascript')
         mime_type, _ = mimetypes.guess_type(file_path)
         headers = [('Content-type', mime_type or 'application/octet-stream')]
         return '200 OK', headers, content
@@ -62,6 +65,7 @@ def handle_api_request(environ):
         passwords, strength_info = [], {}
 
         for _ in range(count):
+            is_memorable_flag = False
             if gen_type == 'random':
                 password, pool_size = generate_random_password(
                     length=int(data.get('length', 16)),
@@ -71,7 +75,8 @@ def handle_api_request(environ):
                     use_special=bool(data.get('use_special', True)),
                     exclude_similar=bool(data.get('exclude_similar', False))
                 )
-            else:
+            else: # memorable
+                is_memorable_flag = True
                 password, pool_size = generate_memorable_password(
                     word_count=int(data.get('word_count', 4)),
                     separator=data.get('separator', '-')
@@ -79,7 +84,8 @@ def handle_api_request(environ):
             
             if password:
                 passwords.append(password)
-                strength_info[password] = calculate_strength(password, pool_size)
+                # Pass the is_memorable_flag to the strength calculator.
+                strength_info[password] = calculate_strength(password, pool_size, is_memorable=is_memorable_flag)
 
         if not passwords:
             raise ValueError("Could not generate password with given constraints.")
@@ -115,7 +121,6 @@ def application(environ, start_response):
         status, api_headers, response = handle_api_request(environ)
         headers = api_headers + cors_headers
     else:
-        # Return a JSON error for any other path, as you observed.
         status = '404 Not Found'
         headers = [('Content-type', 'application/json')] + cors_headers
         response = json.dumps({'error': 'Not Found'}).encode('utf-8')
