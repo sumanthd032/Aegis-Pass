@@ -4,12 +4,10 @@ import sys
 import os
 import mimetypes
 
-
-# This allows us to import from the 'logic' module.
+# --- Add the 'logic' directory to the Python path ---
 sys.path.append(os.path.join(os.path.dirname(__file__), 'logic'))
 
 # --- Import the core logic functions ---
-# Now that the path is set, we can import our logic functions.
 from password_logic import (
     generate_random_password,
     generate_memorable_password,
@@ -17,40 +15,31 @@ from password_logic import (
 )
 
 # --- Define the base path for the frontend files ---
-# This version is more robust for finding the frontend directory.
-# It gets the absolute path of the directory containing this script (backend/)
 backend_dir = os.path.dirname(os.path.abspath(__file__))
-# It then gets the parent directory of 'backend/' (the project root)
 project_root = os.path.dirname(backend_dir)
-# Finally, it constructs the full path to the 'frontend' directory.
 FRONTEND_BASE_PATH = os.path.join(project_root, 'frontend')
 
 
 def serve_static_file(path):
     """Serves a static file from the frontend directory."""
-    # The path from the browser already includes 'static/', so we join it directly.
     file_path = os.path.join(FRONTEND_BASE_PATH, path.lstrip('/'))
     
-    # Security: Ensure the path is within the intended frontend directory
     if not os.path.realpath(file_path).startswith(os.path.realpath(FRONTEND_BASE_PATH)):
         return '403 Forbidden', [], b'Forbidden'
 
     try:
         with open(file_path, 'rb') as f:
             content = f.read()
-        # Guess the MIME type (e.g., 'text/css', 'application/javascript')
         mime_type, _ = mimetypes.guess_type(file_path)
         headers = [('Content-type', mime_type or 'application/octet-stream')]
         return '200 OK', headers, content
     except FileNotFoundError:
-        # If a file isn't found, return a clear text error.
         return '404 Not Found', [('Content-type', 'text/plain')], f"File Not Found: {file_path}".encode()
     except IOError:
         return '500 Internal Server Error', [], b'Internal Server Error'
 
 def serve_template(template_name):
     """Serves an HTML template from the frontend/templates directory."""
-    # This specifically looks inside the 'templates' subfolder for the html file.
     return serve_static_file(os.path.join('templates', template_name))
 
 def handle_api_request(environ):
@@ -84,7 +73,6 @@ def handle_api_request(environ):
             
             if password:
                 passwords.append(password)
-                # Pass the is_memorable_flag to the strength calculator.
                 strength_info[password] = calculate_strength(password, pool_size, is_memorable=is_memorable_flag)
 
         if not passwords:
@@ -97,9 +85,12 @@ def handle_api_request(environ):
         error_response = json.dumps({'error': str(e)})
         return '400 Bad Request', [('Content-type', 'application/json')], error_response.encode('utf-8')
 
-# --- Main WSGI Application ---
-def application(environ, start_response):
-    """The main WSGI application to handle all HTTP requests."""
+# --- Main WSGI Application (RENAMED FOR VERCEL) ---
+def app(environ, start_response):
+    """
+    This is the main WSGI entry point. Vercel looks for a variable
+    named 'app' or 'handler' to run.
+    """
     path = environ.get('PATH_INFO', '/')
     method = environ.get('REQUEST_METHOD', 'GET')
     
@@ -128,10 +119,11 @@ def application(environ, start_response):
     start_response(status, headers)
     return [response]
 
-# --- Main execution block ---
+# --- Main execution block (for local development) ---
 if __name__ == '__main__':
     HOST, PORT = 'localhost', 8080
-    with make_server(HOST, PORT, application) as httpd:
+    # We now pass the 'app' function to the local server
+    with make_server(HOST, PORT, app) as httpd:
         print(f"Aegis Pass server is running on http://{HOST}:{PORT}")
         print("You can now access the application at this address in your browser.")
         print("Press Ctrl+C to stop the server.")
