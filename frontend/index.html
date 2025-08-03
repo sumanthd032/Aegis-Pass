@@ -16,64 +16,84 @@
             appearance: none;
             width: 20px;
             height: 20px;
-            background: #3b82f6; /* Tailwind blue-500 */
+            background: #2563eb; /* Tailwind blue-600 */
             cursor: pointer;
             border-radius: 50%;
             margin-top: -6px; /* Vertically center the thumb on the track */
+            transition: background-color 0.2s ease-in-out;
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            background: #3b82f6; /* Tailwind blue-500 */
         }
         input[type=range]::-moz-range-thumb {
             width: 20px;
             height: 20px;
-            background: #3b82f6;
+            background: #2563eb;
             cursor: pointer;
             border-radius: 50%;
         }
         /* Style for the active and inactive tabs */
         .tab-active {
-            background-color: #3b82f6; /* blue-500 */
+            background-color: #2563eb; /* blue-600 */
             color: white;
         }
         .tab-inactive {
+            background-color: #1f2937; /* gray-800 */
+            color: #9ca3af; /* gray-400 */
+        }
+        .tab-inactive:hover {
             background-color: #374151; /* gray-700 */
             color: #d1d5db; /* gray-300 */
         }
+        /* Styles for the help modal */
+        .modal-overlay {
+            transition: opacity 0.3s ease;
+        }
+        .modal-content {
+            transition: transform 0.3s ease;
+        }
     </style>
 </head>
-<body class="bg-gray-900 text-gray-200 flex items-center justify-center min-h-screen p-4">
+<body class="bg-gray-900 text-gray-200 flex items-center justify-center min-h-screen p-4 antialiased">
 
-    <div class="w-full max-w-2xl mx-auto">
-        <header class="text-center mb-6">
+    <div class="w-full max-w-2xl mx-auto relative">
+        <!-- Help Button -->
+        <button id="help-button" class="absolute top-0 right-0 mt-2 mr-2 text-gray-400 hover:text-white transition-colors" title="Help">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-help-circle"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+        </button>
+
+        <header class="text-center mb-8">
             <h1 class="text-4xl sm:text-5xl font-bold text-white">Aegis Pass</h1>
             <p class="text-gray-400 mt-2">Your personal shield for secure passwords.</p>
         </header>
 
         <main>
             <!-- Results Display Area -->
-            <div id="results-container" class="bg-gray-800 p-4 rounded-lg mb-6 shadow-lg space-y-3">
+            <div id="results-container" class="bg-gray-800/50 border border-gray-700 p-4 rounded-lg mb-6 shadow-lg space-y-3 min-h-[80px]">
                 <!-- Generated passwords will be dynamically inserted here -->
             </div>
 
             <!-- Generator Controls -->
-            <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+            <div class="bg-gray-800/50 border border-gray-700 p-6 rounded-lg shadow-lg">
                 <!-- Tabs for switching between generator types -->
                 <div class="flex border-b border-gray-700 mb-6">
-                    <button id="tab-random" class="tab-active flex-1 py-2 px-4 rounded-t-lg font-semibold transition-colors focus:outline-none">Random</button>
-                    <button id="tab-memorable" class="tab-inactive flex-1 py-2 px-4 rounded-t-lg font-semibold transition-colors focus:outline-none">Memorable</button>
+                    <button id="tab-random" class="tab-active flex-1 py-2.5 px-4 rounded-t-lg font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">Random</button>
+                    <button id="tab-memorable" class="tab-inactive flex-1 py-2.5 px-4 rounded-t-lg font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">Memorable</button>
                 </div>
 
                 <!-- Random Password Form -->
                 <form id="random-form">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
-                        <!-- Left Column: Length and Count controls -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                        <!-- Left Column -->
                         <div>
-                            <div class="mb-5">
+                            <div class="mb-6">
                                 <div class="flex justify-between items-center mb-2">
                                     <label for="length" class="font-medium text-white">Password Length</label>
                                     <span id="length-value" class="text-blue-400 font-semibold text-lg">16</span>
                                 </div>
                                 <input type="range" id="length" min="8" max="128" value="16" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
                             </div>
-                            <div class="mb-5">
+                            <div class="mb-6">
                                 <div class="flex justify-between items-center mb-2">
                                     <label for="count" class="font-medium text-white">Password Count</label>
                                     <span id="count-value" class="text-blue-400 font-semibold text-lg">1</span>
@@ -81,14 +101,14 @@
                                 <input type="range" id="count" min="1" max="10" value="1" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
                             </div>
                         </div>
-                        <!-- Right Column: Character type checkboxes -->
+                        <!-- Right Column -->
                         <div>
-                            <div class="space-y-3">
-                                <div class="flex items-center"><input id="uppercase" type="checkbox" checked class="w-5 h-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"><label for="uppercase" class="ml-3 text-sm font-medium text-gray-300">Uppercase (A-Z)</label></div>
-                                <div class="flex items-center"><input id="lowercase" type="checkbox" checked class="w-5 h-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"><label for="lowercase" class="ml-3 text-sm font-medium text-gray-300">Lowercase (a-z)</label></div>
-                                <div class="flex items-center"><input id="numbers" type="checkbox" checked class="w-5 h-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"><label for="numbers" class="ml-3 text-sm font-medium text-gray-300">Numbers (0-9)</label></div>
-                                <div class="flex items-center"><input id="special" type="checkbox" checked class="w-5 h-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"><label for="special" class="ml-3 text-sm font-medium text-gray-300">Special Chars (!@#)</label></div>
-                                <div class="flex items-center"><input id="exclude-similar" type="checkbox" class="w-5 h-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"><label for="exclude-similar" class="ml-3 text-sm font-medium text-gray-300">Exclude Similar (i,l,1,O,0)</label></div>
+                            <div class="space-y-4">
+                                <div class="flex items-center"><input id="uppercase" type="checkbox" checked class="w-5 h-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500 focus:ring-2"><label for="uppercase" class="ml-3 text-sm font-medium text-gray-300">Uppercase (A-Z)</label></div>
+                                <div class="flex items-center"><input id="lowercase" type="checkbox" checked class="w-5 h-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500 focus:ring-2"><label for="lowercase" class="ml-3 text-sm font-medium text-gray-300">Lowercase (a-z)</label></div>
+                                <div class="flex items-center"><input id="numbers" type="checkbox" checked class="w-5 h-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500 focus:ring-2"><label for="numbers" class="ml-3 text-sm font-medium text-gray-300">Numbers (0-9)</label></div>
+                                <div class="flex items-center"><input id="special" type="checkbox" checked class="w-5 h-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500 focus:ring-2"><label for="special" class="ml-3 text-sm font-medium text-gray-300">Special Chars (!@#)</label></div>
+                                <div class="flex items-center"><input id="exclude-similar" type="checkbox" class="w-5 h-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500 focus:ring-2"><label for="exclude-similar" class="ml-3 text-sm font-medium text-gray-300">Exclude Similar (i,l,1,O,0)</label></div>
                             </div>
                         </div>
                     </div>
@@ -96,17 +116,17 @@
 
                 <!-- Memorable Password Form -->
                 <form id="memorable-form" class="hidden">
-                     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
-                        <!-- Left Column: Word count and password count -->
+                     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                        <!-- Left Column -->
                         <div>
-                            <div class="mb-5">
+                            <div class="mb-6">
                                 <div class="flex justify-between items-center mb-2">
                                     <label for="word-count" class="font-medium text-white">Number of Words</label>
                                     <span id="word-count-value" class="text-blue-400 font-semibold text-lg">4</span>
                                 </div>
                                 <input type="range" id="word-count" min="3" max="10" value="4" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
                             </div>
-                             <div class="mb-5">
+                             <div class="mb-6">
                                 <div class="flex justify-between items-center mb-2">
                                     <label for="memorable-count" class="font-medium text-white">Password Count</label>
                                     <span id="memorable-count-value" class="text-blue-400 font-semibold text-lg">1</span>
@@ -114,7 +134,7 @@
                                 <input type="range" id="memorable-count" min="1" max="10" value="1" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
                             </div>
                         </div>
-                        <!-- Right Column: Separator selection -->
+                        <!-- Right Column -->
                         <div>
                             <label for="separator" class="block mb-2 text-sm font-medium text-white">Separator</label>
                             <select id="separator" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
@@ -130,7 +150,7 @@
 
                 <!-- Generate Button & Message Area -->
                 <div class="mt-8">
-                    <button id="generate-button" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-md focus:outline-none focus:ring-4 focus:ring-blue-800">
+                    <button id="generate-button" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-all shadow-md focus:outline-none focus:ring-4 focus:ring-blue-500/50 transform hover:scale-105 active:scale-100">
                         Generate Password
                     </button>
                     <div id="message-area" class="text-center mt-4 h-5 text-sm text-green-400"></div>
@@ -139,9 +159,33 @@
         </main>
     </div>
 
+    <!-- Help Modal -->
+    <div id="help-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+        <!-- Overlay -->
+        <div id="modal-overlay" class="absolute inset-0 bg-black/60 modal-overlay"></div>
+        
+        <!-- Modal Content -->
+        <div id="modal-content" class="modal-content relative w-full max-w-lg bg-gray-800 border border-gray-700 rounded-lg shadow-xl p-6 sm:p-8 transform scale-95">
+            <button id="modal-close-button" class="absolute top-0 right-0 mt-4 mr-4 text-gray-400 hover:text-white transition-colors" title="Close">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <h2 class="text-2xl font-bold text-white mb-4">About Aegis Pass</h2>
+            <div class="text-gray-300 space-y-4">
+                <p>Aegis Pass is a powerful, secure password generator designed to create strong, random passwords and memorable passphrases to protect your online accounts.</p>
+                <div>
+                    <h3 class="font-semibold text-lg text-white mb-2">Password Types</h3>
+                    <ul class="list-disc list-inside space-y-2">
+                        <li><strong class="text-blue-400">Random:</strong> Creates a classic, strong password using a mix of letters, numbers, and special characters. Ideal for password managers and maximum security.</li>
+                        <li><strong class="text-blue-400">Memorable:</strong> Creates a secure passphrase by joining random words (e.g., "correct-horse-battery-staple"). These are easier for humans to remember while still being very difficult to guess.</li>
+                    </ul>
+                </div>
+                <p>The strength meter estimates how difficult a password would be to crack. Always aim for "Strong" or "Very Strong" for your important accounts.</p>
+            </div>
+        </div>
+    </div>
+
     <script>
         // --- API Endpoint ---
-        // This is the address of the Python backend server.
         const API_URL = 'http://localhost:8080/generate';
 
         // --- DOM Element References ---
@@ -156,6 +200,13 @@
         // Forms
         const randomForm = document.getElementById('random-form');
         const memorableForm = document.getElementById('memorable-form');
+
+        // Modal elements
+        const helpButton = document.getElementById('help-button');
+        const helpModal = document.getElementById('help-modal');
+        const modalOverlay = document.getElementById('modal-overlay');
+        const modalContent = document.getElementById('modal-content');
+        const modalCloseButton = document.getElementById('modal-close-button');
 
         // Random Form Controls
         const lengthSlider = document.getElementById('length');
@@ -181,25 +232,48 @@
 
         // --- Event Listeners ---
         
-        // Switch tabs on click
+        // Tab switching
         tabRandom.addEventListener('click', () => switchTab('random'));
         tabMemorable.addEventListener('click', () => switchTab('memorable'));
 
-        // Update slider value displays on input
+        // Slider value updates
         lengthSlider.addEventListener('input', (e) => lengthValue.textContent = e.target.value);
         countSlider.addEventListener('input', (e) => countValue.textContent = e.target.value);
         wordCountSlider.addEventListener('input', (e) => wordCountValue.textContent = e.target.value);
         memorableCountSlider.addEventListener('input', (e) => memorableCountValue.textContent = e.target.value);
         
-        // Handle the main generate button click
+        // Generate button click
         generateButton.addEventListener('click', handleGeneration);
 
+        // Modal listeners
+        helpButton.addEventListener('click', openModal);
+        modalCloseButton.addEventListener('click', closeModal);
+        modalOverlay.addEventListener('click', closeModal);
+
         // --- Functions ---
+
+        function openModal() {
+            helpModal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden'); // Prevent background scrolling
+            requestAnimationFrame(() => {
+                modalOverlay.classList.remove('opacity-0');
+                modalOverlay.classList.add('opacity-100');
+                modalContent.classList.remove('scale-95');
+                modalContent.classList.add('scale-100');
+            });
+        }
+
+        function closeModal() {
+            modalOverlay.classList.remove('opacity-100');
+            modalOverlay.classList.add('opacity-0');
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-95');
+            setTimeout(() => {
+                helpModal.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            }, 300); // Match transition duration
+        }
         
-        /**
-         * Switches the active tab and form visibility.
-         * @param {string} tabName - The name of the tab to switch to ('random' or 'memorable').
-         */
         function switchTab(tabName) {
             currentTab = tabName;
             const isRandom = tabName === 'random';
@@ -208,19 +282,15 @@
             tabMemorable.className = !isRandom ? 'tab-active ...' : 'tab-inactive ...';
             // Add common classes back
             document.querySelectorAll('.tab-active, .tab-inactive').forEach(el => {
-                el.classList.add('flex-1', 'py-2', 'px-4', 'rounded-t-lg', 'font-semibold', 'transition-colors', 'focus:outline-none');
+                el.classList.add('flex-1', 'py-2.5', 'px-4', 'rounded-t-lg', 'font-semibold', 'transition-colors', 'focus:outline-none', 'focus:ring-2', 'focus:ring-blue-500', 'focus:ring-opacity-50');
             });
 
             randomForm.classList.toggle('hidden', !isRandom);
             memorableForm.classList.toggle('hidden', isRandom);
             
-            // Generate a new password immediately upon switching tabs
             handleGeneration();
         }
 
-        /**
-         * Gathers form data, sends it to the API, and initiates displaying the results.
-         */
         async function handleGeneration() {
             let payload;
             if (currentTab === 'random') {
@@ -253,7 +323,7 @@
                 };
             }
 
-            resultsContainer.innerHTML = '<div class="text-center text-gray-400">Generating...</div>';
+            resultsContainer.innerHTML = '<div class="text-center text-gray-400 p-5">Generating...</div>';
             messageArea.textContent = '';
 
             try {
@@ -275,20 +345,19 @@
 
             } catch (error) {
                 console.error('Error generating password:', error);
-                resultsContainer.innerHTML = `<div class="text-center text-red-400">Error: Could not connect to the API server. Is it running?</div>`;
+                resultsContainer.innerHTML = `<div class="text-center text-red-400 p-5">Error: Could not connect to the API server. Is it running?</div>`;
             }
         }
 
-        /**
-         * Renders the generated passwords and their strength meters in the results container.
-         * @param {string[]} passwords - An array of generated password strings.
-         * @param {object} strengthInfo - An object mapping passwords to their strength details.
-         */
         function displayResults(passwords, strengthInfo) {
             resultsContainer.innerHTML = '';
+            if (!passwords || passwords.length === 0) {
+                 resultsContainer.innerHTML = '<div class="text-center text-gray-400 p-5">No passwords generated.</div>';
+                 return;
+            }
             passwords.forEach(password => {
                 const passwordDiv = document.createElement('div');
-                passwordDiv.className = 'bg-gray-700 p-3 rounded-md flex items-center justify-between';
+                passwordDiv.className = 'bg-gray-700/50 p-3 rounded-md flex items-center justify-between';
 
                 let strengthHtml = '';
                 if (strengthInfo && strengthInfo[password]) {
@@ -296,19 +365,19 @@
                     const textColorClass = color.replace('bg-', 'text-');
                     strengthHtml = `
                         <div class="w-1/4 ml-4">
-                            <div class="w-full bg-gray-600 rounded-full h-2.5">
-                                <div class="${color} h-2.5 rounded-full" style="width: ${width}"></div>
+                            <div class="w-full bg-gray-600 rounded-full h-2">
+                                <div class="${color} h-2 rounded-full" style="width: ${width}"></div>
                             </div>
-                            <p class="text-xs ${textColorClass} text-center mt-1">${text}</p>
+                            <p class="text-xs ${textColorClass} text-center mt-1.5">${text}</p>
                         </div>
                     `;
                 }
 
                 passwordDiv.innerHTML = `
-                    <span class="text-md font-mono break-all text-gray-300">${password}</span>
+                    <span class="text-md font-mono break-all text-gray-300 flex-1">${password}</span>
                     <div class="flex items-center">
                         ${strengthHtml}
-                        <button title="Copy to clipboard" class="copy-btn p-2 ml-4 rounded-md hover:bg-gray-600 active:bg-gray-500 transition-colors" data-password="${password}">
+                        <button title="Copy to clipboard" class="copy-btn p-2 ml-4 rounded-md text-gray-400 hover:bg-gray-600 hover:text-white active:bg-gray-500 transition-colors" data-password="${password}">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                         </button>
                     </div>
@@ -316,7 +385,6 @@
                 resultsContainer.appendChild(passwordDiv);
             });
             
-            // Add event listeners to the newly created copy buttons
             document.querySelectorAll('.copy-btn').forEach(button => {
                 button.addEventListener('click', (e) => {
                     const passwordToCopy = e.currentTarget.dataset.password;
@@ -330,18 +398,12 @@
             });
         }
         
-        /**
-         * Displays a temporary message to the user (e.g., for copy success or errors).
-         * @param {string} message - The text to display.
-         * @param {string} type - The type of message ('success' or 'error').
-         */
         function showMessage(message, type = 'success') {
             messageArea.textContent = message;
             messageArea.className = `text-center mt-4 h-5 text-sm ${type === 'success' ? 'text-green-400' : 'text-red-400'}`;
             setTimeout(() => { messageArea.textContent = ''; }, 3000);
         }
         
-        // Generate a password when the page first loads
         document.addEventListener('DOMContentLoaded', handleGeneration);
     </script>
 </body>
